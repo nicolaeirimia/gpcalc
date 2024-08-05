@@ -29,7 +29,7 @@ const upload = multer({
 let Category;
 let rawdata1 = fs.readFileSync('DB-products.json');
 let rawdata2 = fs.readFileSync('Cocktails.json');
-let rawdata3 = fs.readFileSync('dishes.json');
+let rawdata3 = fs.readFileSync('Dishes.json');
 let rawdata4 = fs.readFileSync('inventory.json');
 let DB_products = JSON.parse(rawdata1);
 let Cocktails = JSON.parse(rawdata2);
@@ -725,7 +725,7 @@ app.post('/deleteDish', async (req, res) => {
 
       Dishes.splice(indexToDelete, 1);
 
-      await fsPromises.writeFile("./dishes.json", JSON.stringify(Dishes), function (err) {
+      await fsPromises.writeFile("./Dishes.json", JSON.stringify(Dishes), function (err) {
         if (err) throw err;
         console.log('dishes.json complete');
       });
