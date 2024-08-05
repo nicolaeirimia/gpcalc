@@ -1,0 +1,229 @@
+<%- include("partials/header"); -%>
+
+<h1>
+    Inventory
+</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>Cost per Unit</th>
+            <th>Selling Price</th>
+            <th>Yield</th>
+            <th>Open</th>
+            <th><a href="/purchases">Purchases</a></th>
+            <th><a href="/credit">Credit</a></th>
+            <th><a href="/transfersin">Transfers IN</a></th>
+            <th><a href="/transfersout">Transfers OUT</a></th>
+            <th>Closing</th>
+            <th>Actual usage</th>
+            <th>Till Read</a></th>
+            <th>Discrepancies</th>
+            <th>G.P.</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% DB_products.slice(1).forEach(product => { %>
+        <tr>
+            <td><%= product.Name %></td>
+            <td><%= product.Size %></td>
+            <td><%= product.Unit %></td>
+            <td><%= product.salesNoVAT %></td>
+            <td><%= product.Yield %></td>
+            <td id='openStock<%= product.id %>' onclick="openPopupForm('<%= product.Name %>')" style="cursor: pointer;">
+                <%= product.openStock %></td>
+            <td id='purchases<%= product.id %>'><%= product.purchases %></td>
+            <td id="credit<%= product.id %>">
+                <%= product.credit %>
+            </td>
+            <td id='transfersIn<%= product.id %>'>
+                <%= product.transfersIn %>
+            </td>
+            <td id='transfersOut<%= product.id %>'>
+                <%= product.transfersOut %>
+            </td>
+            <td id='closingStock<%= product.id %>'>
+                <span onclick="openClosingPopupForm('<%= product.Name %>')"
+                    style="cursor: pointer;"><%= product.closingStock %></span>
+            </td>
+            <div id="closingPopupForm<%= product.Name %>" class="popup">
+                <span class="close" onclick="closeClosingPopupForm('<%= product.Name %>')">&times;</span>
+                <form id="closingForm" action="updateClosingData" method="post">
+                    <label for="productName">Product Name:</label>
+                    <input type="text" id="productName" value="<%= product.Name %>" readonly>
+
+                    <label for="size">Size:</label>
+                    <input type="text" id="size" value="<%= product.Size %>" readonly>
+
+                    <label for="unit">Unit:</label>
+                    <input type="text" id="unit" value="<%= product.Unit %>" readonly>
+
+                    <label for="salesPrice">Selling Price:</label>
+                    <input type="text" id="salesPrice" value="<%= product.salesNoVAT %>" readonly>
+
+                    <label for="yield">Yield:</label>
+                    <input type="text" id="yield" value="<%= product.Yield %>" readonly>
+
+                    <label for="openStock">Closing Stock:</label>
+                    <input type="text" id="closeStock" name="closeStock" value="<%= product.closingStock %>">
+
+                    <input type="text" hidden value="<%= product.id %>" name="productID">
+
+                    <button type="submit">Update Closing Data</button>
+                </form>
+            </div>
+            <% actualUsage = product.openStock + product.purchases + product.credit + product.transfersIn + product.transfersOut - product.closingStock %>
+            <td id="actualUsage<%= product.Name %>">
+                <%= actualUsage %>
+            </td>
+            <td>
+                <span onclick="openTillReadPopupForm('<%= product.Name %>')"
+                    style="cursor: pointer;"><%= product.TillRead %></span>
+            </td>
+
+            <div id="tillReadPopupForm<%= product.Name %>" class="popup">
+                <span class="close" onclick="closeTillReadPopupForm('<%= product.Name %>')">&times;</span>
+                <form id="tillReadForm" action="/updateTillRead" method="post">
+
+                    <label for="productName">Product Name:</label>
+                    <input type="text" id="productName" value="<%= product.Name %>" readonly>
+
+                    <label for="size">Size:</label>
+                    <input type="text" id="size" value="<%= product.Size %>" readonly>
+
+                    <label for="unit">Unit:</label>
+                    <input type="text" id="unit" value="<%= product.Unit %>" readonly>
+
+                    <label for="salesPrice">Selling Price:</label>
+                    <input type="text" id="salesPrice" value="<%= product.salesNoVAT %>" readonly>
+
+                    <label for="yield">Yield:</label>
+                    <input type="text" id="yield" value="<%= product.Yield %>" readonly>
+
+                    <label for="Till Read">Till Read:</label>
+                    <input type="text" id="TillRead" name="TillRead" value="<%= product.TillRead %>">
+
+                    <input type="text" hidden value="<%= product.id %>" name="productID">
+
+                    <button type="submit">Update Till Read Data</button>
+                </form>
+            </div>
+            <% value = actualUsage - product.TillRead %>
+            <% color_class = value > 0 ? "orange-background" : value < 0 ? "red-background" : "green-background" %>
+            <td id="discrepancies<%= product.id %>" class="<%= color_class %>"><%= value %></td>
+            <td>
+                <%= product.currentGP %>
+            </td>
+        </tr>
+        <div id="popupForm<%= product.Name %>" class="popup">
+            <span class="close" onclick="closePopupForm('<%= product.Name %>')">&times;</span>
+            <form id="editForm" action="updateOpenStock" method="post">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" value="<%= product.Name %>" readonly>
+
+                <label for="size">Size:</label>
+                <input type="text" id="size" value="<%= product.Size %>" readonly>
+
+                <label for="unit">Unit:</label>
+                <input type="text" id="unit" value="<%= product.Unit %>" readonly>
+
+                <label for="salesPrice">Selling Price:</label>
+                <input type="text" id="salesPrice" value="<%= product.salesNoVAT %>" readonly>
+
+                <label for="yield">Yield:</label>
+                <input type="text" id="yield" value="<%= product.Yield %>" readonly>
+
+                <label for="openStock">Open Stock:</label>
+                <input type="text" id="openStock" name="openStock" value="<%= product.openStock %>">
+
+                <input type="text" hidden value="<%= product.id %>" name="productID">
+
+                <button type="submit">Update</button>
+            </form>
+        </div>
+
+        <% }); %>
+    </tbody>
+</table>
+
+<script>
+    var currentOpenForm = null;
+
+    function openPopupForm(productName) {
+        // Close the currently open form
+        if (currentOpenForm) {
+            currentOpenForm.style.display = 'none';
+        }
+
+        // Open the new form
+        var popupFormId = 'popupForm' + productName;
+        var popupForm = document.getElementById(popupFormId);
+        if (popupForm) {
+            popupForm.style.display = 'block';
+            currentOpenForm = popupForm;
+        }
+    }
+
+    function closePopupForm(productName) {
+        var popupFormId = 'popupForm' + productName;
+        var popupForm = document.getElementById(popupFormId);
+        if (popupForm) {
+            popupForm.style.display = 'none';
+            currentOpenForm = null;
+        }
+    }
+
+    var currentClosingForm = null;
+
+    function openClosingPopupForm(productName) {
+        // Close the currently open form
+        if (currentClosingForm) {
+            currentClosingForm.style.display = 'none';
+        }
+
+        // Open the new form
+        var closingPopupFormId = 'closingPopupForm' + productName;
+        var closingPopupForm = document.getElementById(closingPopupFormId);
+        if (closingPopupForm) {
+            closingPopupForm.style.display = 'block';
+            currentClosingForm = closingPopupForm;
+        }
+    }
+
+    function closeClosingPopupForm(productName) {
+        var closingPopupFormId = 'closingPopupForm' + productName;
+        var closingPopupForm = document.getElementById(closingPopupFormId);
+        if (closingPopupForm) {
+            closingPopupForm.style.display = 'none';
+            currentClosingForm = null;
+        }
+    }
+
+    var currentTillReadForm = null;
+
+    function openTillReadPopupForm(productName) {
+        if (currentTillReadForm) {
+            currentTillReadForm.style.display = 'none';
+        }
+
+        var tillReadPopupFormId = 'tillReadPopupForm' + productName;
+        var tillReadPopupForm = document.getElementById(tillReadPopupFormId);
+        if (tillReadPopupForm) {
+            tillReadPopupForm.style.display = 'block';
+            currentTillReadForm = tillReadPopupForm;
+        }
+    }
+
+    function closeTillReadPopupForm(productName) {
+        var tillReadPopupFormId = 'tillReadPopupForm' + productName;
+        var tillReadPopupForm = document.getElementById(tillReadPopupFormId);
+        if (tillReadPopupForm) {
+            tillReadPopupForm.style.display = 'none';
+            currentTillReadForm = null;
+        }
+    }
+</script>
+
+<%- include("partials/footer"); -%>

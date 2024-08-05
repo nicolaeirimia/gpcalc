@@ -1,0 +1,121 @@
+<%- include("partials/header"); -%>
+
+<form id="logoutForm" action="/logout" method="post">
+    <h1>Home</h1>
+    <button id="logoutButton" type="submit">Logout</button>
+</form>
+
+
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Subcategory</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Unit</th>
+            <th>Size</th>
+            <th>Yield</th>
+            <th>Net Price</th>
+            <th>Sales Price with VAT</th>
+            <th>Sales without VAT</th>
+            <th>Actual GP price</th>
+            <th>Required price for a GP of <%= DB_products[0].requiredGP1 %></th>
+            <th>Required price for a GP of <%= DB_products[0].requiredGP2 %></th>
+            <th>Required price for a GP of <%= DB_products[0].requiredGP3 %></th>
+            <th>Update</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% DB_products.slice(1).forEach((item) => { %>
+        <tr>
+            <td><%= item.id %></td>
+            <% Object.entries(item).slice(0, -8).forEach(([key, value]) => { %>
+            <td><%= value %></td>
+            <% }); %>
+            <td>
+                <button class="updateButton" id="openPopup_<%= item.id %>" onclick="openPopup1('<%= item.id %>')">Update DB</button>
+            </td>
+        </tr>
+
+        <div class="overlay1" id="overlay1"></div>
+
+        <div class="popup1" id="popup_<%= item.id %>">
+            <span class="popup-close1" onclick="closePopup1('<%= item.id %>')">&times;</span>
+            <h1>Update the existing product</h1>
+            <form action="updateProd" method="post">
+                <label for="inputField">Category</label>
+                <input type="text" id="category" name="category" readonly value="<%= item.Category %>">
+                <label for="inputField">Subcategory</label>
+                <input type="text" id="subcategory" name="subcategory" readonly value="<%= item.Subcategory %>">
+                <label for="inputField">Type</label>
+                <input type="text" id="type" name="type" readonly value="<%= item.Type %>">
+                <label for="inputField">Name</label>
+                <input type="text" id="name" name="Uname" value="<%= item.Name %>">
+                <label for="inputField">Yield</label>
+                <input type="number" id="yield" name="Uyield" value="<%= item.Yield %>">
+                <label for="inputField">Net Price</label>
+                <input type="number" id="netPrice" name="UnetPrice" value="<%= item.netPrice %>">
+                <label for="inputField">Sales Price with VAT</label>
+                <input type="number" id="salesVAT" name="UsalesVAT" value="<%= item.salesVAT %>">
+                <input type="text" hidden name="Uid" value="<%= item.id %>">
+                <br>
+                <input type="submit" value="Update">
+            </form>
+            <form action="deleteProduct" method="post">
+                <input type="text" name="objectId" hidden value="<%= item.id %>">
+                <button type = "submit"> Delete</button>
+            </form>
+        </div>
+        <% }); %>
+    </tbody>
+</table>
+
+
+<button id="openPopup">Update GP %</button>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="popup" id="popup">
+    <span class="popup-close" onclick="closePopup()">&times;</span>
+    <form action="updateGP" method="post">
+        <label for="inputField">Set required GP1 %</label>
+        <input type="number" id="requiredGP1" name="requiredGP1" required>
+        <label for="inputField">Set required GP2 %</label>
+        <input type="number" id="requiredGP2" name="requiredGP2" required>
+        <label for="inputField">Set required GP3 %</label>
+        <input type="number" id="requiredGP3" name="requiredGP3" required>
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+<script>
+    function openPopup() {
+        document.getElementById("popup").style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+
+    function closePopup() {
+        document.getElementById("popup").style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+
+    document.getElementById("openPopup").addEventListener("click", openPopup);
+
+    function openPopup1(id) {
+
+        document.getElementById("popup_" + id).style.display = "block";
+        document.getElementById("overlay1").style.display = "block";
+
+    }
+
+    function closePopup1(id) {
+        document.getElementById("popup_" + id).style.display = "none";
+        document.getElementById("overlay1").style.display = "none";
+    }
+</script>
+
+<%- include("partials/footer"); -%>

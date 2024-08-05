@@ -1,0 +1,134 @@
+<%- include("partials/header"); -%>
+
+<h1>Cocktails Data Table</h1>
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Estimated Sales Price</th>
+        <th>Total Cost</th>
+        <th>Cost Margin</th>
+        <th>Net Profit</th>
+        <th>Details</th>
+        <th>Photo</th>
+        <th>Update</th>
+        <th>Add Ingredient</th>
+        <th>Delete</th>
+    </tr>
+    <% Cocktails.forEach((item) => { %>
+    <tr>
+        <% Object.entries(item).slice(0, -3).forEach(([key, value]) => { %>
+        <td><%= value %></td>
+        <% }); %>
+        <td><img src="/documents/<%=item.photoName%>" alt="Cocktail Photo" width="150" height="150"></td>
+        <td>
+            <button class="updateButton" onclick="openUpdatePopup('<%= item.id %>')">Update</button>
+        </td>
+        <td>
+            <button class="addIngredientButton" onclick="openAddIngredientPopup('<%= item.id %>')">Add
+                Ingredient</button>
+        </td>
+        <div class="overlay" id="overlay"></div>
+
+        <div class="popup" id="updatePopup_<%= item.id %>">
+            <span class="popup-close" onclick="closeUpdatePopup('<%= item.id %>')">&times;</span>
+            <h1>Update Cocktail</h1>
+            <form action="/updateCocktail" method="post" id="updateCocktailForm">
+                <!-- Form fields for updating the cocktail data -->
+                <label for="date">Date</label>
+                <input type="text" id="date" name="date" value="<%= item.Date %>" readonly>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="<%= item.Name %>">
+                <label for="estimatedSalesPrice">Estimated Sales Price</label>
+                <input type="text" id="estimatedSalesPrice" name="estimatedSalesPrice"
+                    value="<%= item.estimatedSalesPrice %>">
+                <!-- Add similar fields for other properties -->
+
+                <h2>Current Ingredients</h2>
+                <div class="ingredients-container">
+                    <% item.ingredients.forEach((ingredient) => { %>
+                    <div class="ingredient-row">
+                        <label for="<%= ingredient.product.id %>">Name</label>
+                        <input type="text" id="<%= ingredient.product.id %>" name="<%= ingredient.product.Name %>"
+                            value="<%= ingredient.product.Name %>">
+
+                        <label for="<%= ingredient.product.id %>">Quantity</label>
+                        <input type="number" step="0.01" id="<%= ingredient.product.id %>_quantity"
+                            name="<%= ingredient.product.Name %>_quantity" value="<%= ingredient.quantity %>">
+
+                        <button type="submit" name="buttonDelete" value="<%= ingredient.product.id %>"
+                            onclick="updateButtonName(this)">Delete</button>
+                    </div>
+                    <% }); %>
+                </div>
+
+                <!-- Editable fields -->
+                <label for="details">Details</label>
+                <input type="text" id="details<%= item.id %>" name="details" value="<%= item.details %>">
+                <input type="text" name="cocktailId" hidden value="<%= item.id %>">
+
+                <input type="submit" value="Update">
+            </form>
+        </div>
+
+        <!-- Add Ingredient Form -->
+        <div class="popup" id="addIngredientPopup_<%= item.id %>">
+            <span class="popup-close" onclick="closeAddIngredientPopup('<%= item.id %>')">&times;</span>
+            <h1>Add New Ingredient</h1>
+            <form action="/addIngredientCocktail" method="post">
+                <div class="ingredient-row">
+                    <label for="newIngredientProduct">Product</label>
+                    <select id="newIngredientProduct" name="newIngredientProduct">
+                        <option value="">Select product</option>
+                        <% DB_products.forEach((product) => { if(product.Category === "Drink"){%>
+                        <option value="<%= product.id %>"><%= product.Name %></option>
+                        <% } %>
+                        <% }); %>
+                    </select>
+
+                    <label for="newIngredientQuantity">Quantity</label>
+                    <input type="number" step="0.01" id="newIngredientQuantity" name="newIngredientQuantity" value="">
+
+                    <input type="text" name="targetCocktailId" hidden value="<%= item.id %>">
+
+                    <input type="submit" value="Add new Ingredient">
+                </div>
+            </form>
+        </div>
+        <td>
+            <form action="/deleteCocktail" method="post">
+                <input type="hidden" name="cocktailId" value="<%= item.id %>">
+                <button type="submit" class="deleteButton">Delete</button>
+            </form>
+        </td>
+    </tr>
+    <% }); %>
+</table>
+
+<script>
+    function updateButtonName(button) {
+        button.name = "buttonClicked";
+    }
+
+    function openUpdatePopup(id) {
+        document.getElementById("updatePopup_" + id).style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+
+    function closeUpdatePopup(id) {
+        document.getElementById("updatePopup_" + id).style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+
+    function openAddIngredientPopup(id) {
+        document.getElementById("addIngredientPopup_" + id).style.display = "block";
+        document.getElementById("overlay").style.display = "block";
+    }
+
+    function closeAddIngredientPopup(id) {
+        document.getElementById("addIngredientPopup_" + id).style.display = "none";
+        document.getElementById("overlay").style.display = "none";
+    }
+</script>
+
+<%- include("partials/footer"); -%>

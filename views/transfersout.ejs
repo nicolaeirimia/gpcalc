@@ -1,0 +1,104 @@
+<%- include("partials/header"); -%>
+
+<h1>Transfer Out Inventory</h1>
+
+<form action="/updateTransfersOut" method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Unit Price</th>
+                <th>Sell Price</th>
+                <th>Yield</th>
+                <th>Transfers Out Totals</th>
+                <% for (let i = 1; i <= 8; i++) { %>
+                <th>Transfers Out <%= i %></th>
+                <% } %>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <% for (let i = 1; i <= 8; i++) { %>
+                <th>Date & Amount</th>
+                <% } %>
+            </tr>
+        </thead>
+        <tbody>
+            <% DB_products.slice(1).forEach(product => { %>
+            <tr>
+                <td><%= product.Name %></td>
+                <td><%= product.Size %></td>
+                <td><%= product.Unit %></td>
+                <td><%= product.salesNoVAT %></td>
+                <td><%= product.Yield %></td>
+                <td>
+                    <input id="transfersOutTotal<%= product.id %>" name="transfersOutTotal<%= product.id %>"
+                        value="<%= product.transfersOut %>" readonly>
+                </td>
+                <% const productTransfersOut = Inventory.find(transfersOut => transfersOut.productID === product.id); %>
+
+                <% for (let i = 0; i < 8; i++) { %>
+                <td>
+                    <input type="date" name="date[<%= product.id %>][<%= i %>]" style="margin-bottom: 5px;"
+                        value="<%= productTransfersOut ? productTransfersOut.TransferOut.date[i] : '' %>">
+                    <br>
+                    <input type="number" class="amounts" name="value[<%= product.id %>][<%= i %>]"
+                        data-product="<%= product.id %>" data-column="<%= i %>"
+                        oninput="calculateTotal('<%= product.id %>')"
+                        value="<%= productTransfersOut ? productTransfersOut.TransferOut.value[i] : 0 %>">
+                </td>
+                <% } %>
+            </tr>
+            <input type="text" hidden value="<%= product.id %>" name="productID[]">
+            <% }); %>
+        </tbody>
+    </table>
+
+    <button type="submit">Update Transfers Out</button>
+</form>
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    input {
+        width: 80px;
+        box-sizing: border-box;
+    }
+
+    button {
+        margin-top: 10px;
+    }
+</style>
+
+<script>
+    function calculateTotal(productId) {
+        const transfersOutTotalCell = document.getElementById('transfersOutTotal' + productId);
+        const transfersOutInputs = document.querySelectorAll('.amounts[data-product="' + productId + '"]');
+        let total = 0;
+
+        for (let i = 0; i < transfersOutInputs.length; i++) {
+            const inputValue = parseInt(transfersOutInputs[i].value) || 0;
+            total += inputValue;
+        }
+
+        transfersOutTotalCell.textContent = total;
+        transfersOutTotalCell.setAttribute('value', total);
+    }
+</script>
+
+<%- include("partials/footer"); -%>

@@ -1,0 +1,104 @@
+<%- include("partials/header"); -%>
+
+<h1>Credit Inventory</h1>
+
+<form action="/updateCredit" method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Size</th>
+                <th>Unit Price</th>
+                <th>Sell Price</th>
+                <th>Yield</th>
+                <th>Credit Totals</th>
+                <% for (let i = 1; i <= 8; i++) { %>
+                <th>Credit <%= i %></th>
+                <% } %>
+            </tr>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <% for (let i = 1; i <= 8; i++) { %>
+                <th>Date & Amount</th>
+                <% } %>
+            </tr>
+        </thead>
+        <tbody>
+            <% DB_products.slice(1).forEach(product => { %>
+            <tr>
+                <td><%= product.Name %></td>
+                <td><%= product.Size %></td>
+                <td><%= product.Unit %></td>
+                <td><%= product.salesNoVAT %></td>
+                <td><%= product.Yield %></td>
+                <td>
+                    <input id="creditTotal<%= product.id %>" name="creditTotal<%= product.id %>"
+                        value="<%= product.credit %>" readonly>
+                </td>
+                <% const productCredits = Inventory.find(credit => credit.productID === product.id); %>
+
+                <% for (let i = 0; i < 8; i++) { %>
+                <td>
+                    <input type="date" name="date[<%= product.id %>][<%= i %>]" style="margin-bottom: 5px;"
+                        value="<%= productCredits ? productCredits.creditValues.date[i] : '' %>">
+                    <br>
+                    <input type="number" class="amounts" name="value[<%= product.id %>][<%= i %>]"
+                        data-product="<%= product.id %>" data-column="<%= i %>"
+                        oninput="calculateTotal('<%= product.id %>')"
+                        value="<%= productCredits ? productCredits.creditValues.value[i] : 0 %>">
+                </td>
+                <% } %>
+            </tr>
+            <input type="text" hidden value="<%= product.id %>" name="productID[]">
+            <% }); %>
+        </tbody>
+    </table>
+
+    <button type="submit">Update Credits</button>
+</form>
+
+<style>
+        table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        text-align: left;
+    }
+
+    input {
+        width: 80px;
+        box-sizing: border-box;
+    }
+
+    button {
+        margin-top: 10px;
+    }
+</style>
+
+<script>
+    function calculateTotal(productId) {
+        const creditTotalCell = document.getElementById('creditTotal' + productId);
+        const creditInputs = document.querySelectorAll('.amounts[data-product="' + productId + '"]');
+        let total = 0;
+
+        for (let i = 0; i < creditInputs.length; i++) {
+            const inputValue = parseInt(creditInputs[i].value) || 0;
+            total += inputValue;
+        }
+
+        creditTotalCell.textContent = total;
+        creditTotalCell.setAttribute('value', total);
+    }
+</script>
+
+<%- include("partials/footer"); -%>
