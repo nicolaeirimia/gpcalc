@@ -149,6 +149,8 @@ app.post("/settings", async function (req, res) {
   let recommended2 = (unit * 100 / (100 - reqGP2)).toFixed(2);
   let recommended3 = (unit * 100 / (100 - reqGP3)).toFixed(2);
 
+  let cashMargin = (noVAT-unit).toFixed(2) + "£";
+
   let newId;
   do {
     newId = Math.random().toString(36).substring(2, 8);
@@ -165,6 +167,7 @@ app.post("/settings", async function (req, res) {
     netPrice: req.body.net,
     salesVAT: req.body.sales,
     salesNoVAT: noVAT.toFixed(2),
+    cashMargin: cashMargin,
     currentGP: currentGP,
     requiredGP1: recommended1,
     requiredGP2: recommended2,
@@ -267,6 +270,7 @@ app.post('/updateProd', async (req, res) => {
       element.salesVAT = newSalesVAT;
       element.Unit = (newNetPrice / newYield).toFixed(2);
       element.salesNoVAT = (newSalesVAT / 1.2).toFixed(2);
+      element.cashMargin = ((newSalesVAT / 1.2)-(newNetPrice / newYield)).toFixed(2) + "£";
       element.currentGP = ((1 - element.Unit / element.salesNoVAT) * 100).toFixed(2) + "%";
       element.requiredGP1 = (element.Unit * 100 / (100 - reqGP1)).toFixed(2);
       element.requiredGP2 = (element.Unit * 100 / (100 - reqGP2)).toFixed(2);
@@ -1041,12 +1045,28 @@ app.post('/uploadCSV', uploadCSV.single('csvFile'), async (req, res) => {
 
   csvParserInstance
     .on('data', (row) => {
-      rows.push(row);
+      
+      const filteredRow = Object.keys(row)
+      .slice(0, 8)
+      .reduce((result, key) => {
+        result[key] = row[key];
+        return result;
+      }, {});
+
+    rows.push(filteredRow);
     })
     .on('end', async () => {
 
 
       rows.forEach((row) => {
+
+            // Normalize keys (remove quotes)
+      const normalizedRow = {};
+      for (const key in row) {
+      const normalizedKey = key.trim().replace(/^['"]+|['"]+$/g, '');
+      normalizedRow[normalizedKey] = row[key];
+    }
+        console.log('Processing row:', normalizedRow);
 
         const unit = row.netPrice / row.Yield;
         const noVAT = row.salesVAT / 1.2;
@@ -1054,6 +1074,7 @@ app.post('/uploadCSV', uploadCSV.single('csvFile'), async (req, res) => {
         let recommended1 = (unit * 100 / (100 - reqGP1)).toFixed(2);
         let recommended2 = (unit * 100 / (100 - reqGP2)).toFixed(2);
         let recommended3 = (unit * 100 / (100 - reqGP3)).toFixed(2);
+        let cashMargin = (noVAT-unit).toFixed(2) + "£";
       
         let newId;
         do {
@@ -1061,7 +1082,7 @@ app.post('/uploadCSV', uploadCSV.single('csvFile'), async (req, res) => {
         } while (DB_products.some(item => item.id === newId));
       
               const product = {
-                Category: row.Category1,
+                Category: normalizedRow.Category,
                 Subcategory: row.Subcategory,
                 Type: row.Type,
                 Name: row.Name,
@@ -1071,6 +1092,7 @@ app.post('/uploadCSV', uploadCSV.single('csvFile'), async (req, res) => {
                 netPrice: row.netPrice,
                 salesVAT: row.salesVAT,
                 salesNoVAT: noVAT.toFixed(2),
+                cashMargin: cashMargin,
                 currentGP: currentGP,
                 requiredGP1: recommended1,
                 requiredGP2: recommended2,
