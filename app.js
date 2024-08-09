@@ -1045,7 +1045,7 @@ app.post('/uploadCSV', uploadCSV.single('csvFile'), async (req, res) => {
 
   csvParserInstance
     .on('data', (row) => {
-      
+
       const filteredRow = Object.keys(row)
       .slice(0, 8)
       .reduce((result, key) => {
@@ -1066,8 +1066,6 @@ app.post('/uploadCSV', uploadCSV.single('csvFile'), async (req, res) => {
       const normalizedKey = key.trim().replace(/^['"]+|['"]+$/g, '');
       normalizedRow[normalizedKey] = row[key];
     }
-        console.log('Processing row:', normalizedRow);
-
         const unit = row.netPrice / row.Yield;
         const noVAT = row.salesVAT / 1.2;
         const currentGP = ((1 - unit / noVAT) * 100).toFixed(2) + "%";
